@@ -12,10 +12,6 @@ class OpenHouse {
 
     private $isyPrograms;
 
-    const BLUETOOTHCTL_NAME = 'Name: ';
-    const BLUETOOTHCTL_CONNECTED = 'Connected: yes';
-
-    const POLL_DELAY = 2;
     const DEVICE_TIMEOUT = 30;
 
     function __construct($config)
@@ -28,36 +24,11 @@ class OpenHouse {
         $this->isyEmptyProgram = $config->isyEmptyProgram;
     }
 
-    private function getDevice($address)
+    private function pingDevice($address)
     {
-
-        $connected = false;
-        $command = "echo \"info $address\" | bluetoothctl";
-        exec($command, $lines);
-        foreach ($lines as $line) {
-            $namePosition = strpos($line, self::BLUETOOTHCTL_NAME);
-            if ($namePosition !== false) {
-                $name = substr($line, $namePosition + strlen(self::BLUETOOTHCTL_NAME));
-            } elseif (strpos($line, self::BLUETOOTHCTL_CONNECTED) !== false) {
-                $connected = true;
-            }
-        }
-
-        // if we couldn't find a name, assume this failed
-        if (!isset($name)) {
-            return false;
-        }
-
-        return new OpenHouseDevice($name, $address, $connected);
-
+        $result = shell_exec("l2ping $address -c 1");
+        return (strpos($result, $address) !== false);
     }
-
-    private function connectToDevice($address)
-    {
-        $command = "echo \"connect $address\" | bluetoothctl";
-        exec($command);
-    }
-
     private function runIsyOccupiedProgram()
     {
         $isyOccupiedProgramId = $this->isyPrograms[$this->isyOccupiedProgram];
@@ -89,7 +60,6 @@ class OpenHouse {
     private function callIsy($rest)
     {
         $url = "http://" . $this->isyHostname . "/rest/" . $rest;
-        print_r($url);
         $request = curl_init($url);
         curl_setopt($request, CURLOPT_HEADER, 1);
         curl_setopt($request, CURLOPT_USERPWD, $this->isyUsername . ":" . $this->isyPassword);
@@ -107,23 +77,15 @@ class OpenHouse {
 
         // cache program ids
         $this->isyPrograms = $this->getIsyPrograms();
-        print_r($this->isyPrograms);
 
         while (true) {
             
             foreach ($this->registeredAddresses as $registeredAddress) {
 
-                $device = $this->getDevice($registeredAddress);
-                print_r($device);
-                if (!$device) {
-                    echo "DEVICE UNPAIRED: $registeredAddress\n";
-                    continue;
-                }
-
-                if ($device->getConnected()) {
+                if ($this->pingDevice($registeredAddress)) {
 
                     if (!array_key_exists($registeredAddress, $this->foundAddresses)) {
-                        echo "DEVICE DISCOVERED: " . $device->getName() . "\n";
+                        echo "DEVICE DISCOVERED: $registeredAddress\n";
                     }
 
                     if (count($this->foundAddresses) === 0) {
@@ -139,7 +101,7 @@ class OpenHouse {
                     // see if an existing entry has expired
                     if (array_key_exists($registeredAddress, $this->foundAddresses)) {
                         if ((time() - $this->foundAddresses[$registeredAddress]) > self::DEVICE_TIMEOUT) {
-                            echo "DEVICE LOST: " . $device->getName() . "\n";
+                            echo "DEVICE LOST: $registeredAddress\n";
                             unset($this->foundAddresses[$registeredAddress]);
                             if (count($this->foundAddresses) === 0) {
                                 echo "HOUSE EMPTY\n";
@@ -148,42 +110,11 @@ class OpenHouse {
                         }
                     }
 
-                    // attempt to connect to the device
-                    $this->connectToDevice($registeredAddress);
-
                 }
 
             }
 
-            sleep(self::POLL_DELAY);
-
         }
-    }
-
-}
-
-class OpenHouseDevice {
-
-    private $name;
-    private $address;
-    private $connected;
-
-    public function getName() {
-        return $this->name;
-    }
-
-    public function getAddress() {
-        return $this->address;
-    }
-
-    public function getConnected() {
-        return $this->connected;
-    }
-
-    function __construct($name, $address, $connected) {
-        $this->name = $name;
-        $this->address = $address;
-        $this->connected = $connected;
     }
 
 }
