@@ -13,6 +13,7 @@ class OpenHouse {
     private $isyPrograms;
 
     const DEVICE_TIMEOUT = 30;
+    const L2PING_SUCCESS = '1 sent, 1 received';
 
     function __construct($config)
     {
@@ -24,10 +25,21 @@ class OpenHouse {
         $this->isyEmptyProgram = $config->isyEmptyProgram;
     }
 
-    private function pingDevice($address)
+    private function pingRegisteredDevices()
     {
-        $result = shell_exec("l2ping $address -c 1");
-        return (strpos($result, $address) !== false);
+        $command = '';
+        foreach ($this->registeredAddresses as $registeredAddress) {
+            $command .= "l2ping $registeredAddress -c 1 & ";
+        }
+        $command .= 'wait';
+        $result = exec($command);
+        $pungDevices = [];
+        foreach ($this->registeredAddresses as $registeredAddress) {
+            if (strpos($result, self::L2PING_SUCCESS) !== false) {
+                $pungDevices[] = $registeredAddress;
+            }
+        }
+        return $pungDevices;
     }
     private function runIsyOccupiedProgram()
     {
@@ -79,10 +91,13 @@ class OpenHouse {
         $this->isyPrograms = $this->getIsyPrograms();
 
         while (true) {
+
+            // ping all devices simultaneously
+            $pungDevices = $this->pingRegisteredDevices();
             
             foreach ($this->registeredAddresses as $registeredAddress) {
 
-                if ($this->pingDevice($registeredAddress)) {
+                if (array_search($registeredAddress, $pungDevices) !== false) {
 
                     if (!array_key_exists($registeredAddress, $this->foundAddresses)) {
                         echo "DEVICE DISCOVERED: $registeredAddress\n";
