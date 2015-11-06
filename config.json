@@ -1,0 +1,10 @@
+{
+  "registeredAddresses": [
+    "2C:BE:08:94:9A:11"
+  ],
+  "isyHostname": "xerxes-insteon0",
+  "isyUsername": "admin",
+  "isyPassword": "alexxela",
+  "isyOccupiedProgram": "House Occupied",
+  "isyEmptyProgram": "House Empty"
+}
