@@ -127,11 +127,11 @@ class OpenHouse {
 
                 }
 
-            }
+                // if we are occupied, we can take a breather
+                if ($this->houseOccupied) {
+                    sleep(self::OCCUPIED_POLL_DELAY_S);
+                }
 
-            // if we are occupied, we can take a breather
-            if ($this->houseOccupied) {
-                sleep(self::OCCUPIED_POLL_DELAY_S);
             }
 
         }
