@@ -9,11 +9,12 @@ class OpenHouse {
     private $isyPassword;
     private $isyOccupiedProgram;
     private $isyEmptyProgram;
-
     private $isyPrograms;
+    private $houseOccupied;
 
-    const DEVICE_TIMEOUT = 30;
-    const L2PING_SUCCESS = '1 sent, 1 received';
+    const DEVICE_TIMEOUT_S = 30;
+    const OCCUPIED_POLL_DELAY_S = 3;
+    const HCI_PAGETO_MS = 1500;
 
     function __construct($config)
     {
@@ -25,22 +26,20 @@ class OpenHouse {
         $this->isyEmptyProgram = $config->isyEmptyProgram;
     }
 
-    private function pingRegisteredDevices()
+    private function hciConfig()
     {
-        $command = '';
-        foreach ($this->registeredAddresses as $registeredAddress) {
-            $command .= "l2ping $registeredAddress -c 1 & ";
-        }
-        $command .= 'wait';
-        $result = exec($command);
-        $pungDevices = [];
-        foreach ($this->registeredAddresses as $registeredAddress) {
-            if (strpos($result, self::L2PING_SUCCESS) !== false) {
-                $pungDevices[] = $registeredAddress;
-            }
-        }
-        return $pungDevices;
+        // ensure BT is up
+        shell_exec("hciconfig hci0 up");
+        // set ping HW timeout
+        shell_exec("hciconfig hci0 pageto " . self::HCI_PAGETO_MS);
     }
+
+    private function pingDevice($address)
+    {
+        $result = shell_exec("l2ping $address -c 1 -t 0");
+        return (strpos($result, $address) !== false);
+    }
+
     private function runIsyOccupiedProgram()
     {
         $isyOccupiedProgramId = $this->isyPrograms[$this->isyOccupiedProgram];
@@ -87,17 +86,16 @@ class OpenHouse {
     public function run()
     {
 
+        // hci up and config
+        $this->hciConfig();
         // cache program ids
         $this->isyPrograms = $this->getIsyPrograms();
 
         while (true) {
-
-            // ping all devices simultaneously
-            $pungDevices = $this->pingRegisteredDevices();
             
             foreach ($this->registeredAddresses as $registeredAddress) {
 
-                if (array_search($registeredAddress, $pungDevices) !== false) {
+                if ($this->pingDevice($registeredAddress)) {
 
                     if (!array_key_exists($registeredAddress, $this->foundAddresses)) {
                         echo "DEVICE DISCOVERED: $registeredAddress\n";
@@ -105,6 +103,7 @@ class OpenHouse {
 
                     if (count($this->foundAddresses) === 0) {
                         echo "HOUSE OCCUPIED\n";
+                        $this->houseOccupied = true;
                         $this->runIsyOccupiedProgram();
                     }
 
@@ -115,11 +114,12 @@ class OpenHouse {
 
                     // see if an existing entry has expired
                     if (array_key_exists($registeredAddress, $this->foundAddresses)) {
-                        if ((time() - $this->foundAddresses[$registeredAddress]) > self::DEVICE_TIMEOUT) {
+                        if ((time() - $this->foundAddresses[$registeredAddress]) > self::DEVICE_TIMEOUT_S) {
                             echo "DEVICE LOST: $registeredAddress\n";
                             unset($this->foundAddresses[$registeredAddress]);
                             if (count($this->foundAddresses) === 0) {
                                 echo "HOUSE EMPTY\n";
+                                $this->houseOccupied = false;
                                 $this->runIsyEmptyProgram();
                             }
                         }
@@ -127,6 +127,11 @@ class OpenHouse {
 
                 }
 
+            }
+
+            // if we are occupied, we can take a breather
+            if ($this->houseOccupied) {
+                sleep(self::OCCUPIED_POLL_DELAY_S);
             }
 
         }
