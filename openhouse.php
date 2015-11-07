@@ -12,8 +12,9 @@ class OpenHouse {
     private $isyPrograms;
     private $houseOccupied;
 
-    const DEVICE_TIMEOUT_S = 30;
-    const OCCUPIED_POLL_DELAY_S = 3;
+    const STARTUP_COMMAND_DELAY_S = 2;
+    const DEVICE_TIMEOUT_S = 60;
+    const OCCUPIED_POLL_DELAY_S = 2;
     const HCI_PAGETO_MS = 1500;
 
     function __construct($config)
@@ -32,6 +33,18 @@ class OpenHouse {
         shell_exec("hciconfig hci0 up");
         // set ping HW timeout
         shell_exec("hciconfig hci0 pageto " . self::HCI_PAGETO_MS);
+        // small wait
+        sleep(self::STARTUP_COMMAND_DELAY_S);
+    }
+
+    private function hciPair()
+    {
+        foreach ($this->registeredAddresses as $registeredAddress) {
+            // attemp to pair with registered addresses
+            shell_exec("hcitool cc $registeredAddress; hcitool auth $registeredAddress;");
+            // small wait
+            sleep(self::STARTUP_COMMAND_DELAY_S);
+        }
     }
 
     private function pingDevice($address)
@@ -88,6 +101,8 @@ class OpenHouse {
 
         // hci up and config
         $this->hciConfig();
+        // pair devices
+        $this->hciPair();
         // cache program ids
         $this->isyPrograms = $this->getIsyPrograms();
 
