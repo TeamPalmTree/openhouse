@@ -12,7 +12,8 @@ class OpenHouse {
     private $isyPrograms;
     private $houseOccupied;
 
-    const STARTUP_COMMAND_DELAY_S = 2;
+    const STARTUP_COMMAND_DELAY_S = 5;
+    const PAIRING_ATTEMPTS = 5;
     const DEVICE_TIMEOUT_S = 60;
     const OCCUPIED_POLL_DELAY_S = 2;
     const HCI_PAGETO_MS = 1500;
@@ -40,10 +41,14 @@ class OpenHouse {
     private function hciPair()
     {
         foreach ($this->registeredAddresses as $registeredAddress) {
-            // attemp to pair with registered addresses
-            shell_exec("hcitool cc $registeredAddress; hcitool auth $registeredAddress;");
-            // small wait
-            sleep(self::STARTUP_COMMAND_DELAY_S);
+            $attempts = 0;
+            do {
+                // attemp to pair with registered addresses
+                $result = shell_exec("hcitool cc $registeredAddress; hcitool auth $registeredAddress;");
+                // small wait
+                sleep(self::STARTUP_COMMAND_DELAY_S);
+                $attempts++;
+            } while (($attempts < self::PAIRING_ATTEMPTS) && (strpos($result, 'error') !== false));
         }
     }
 
