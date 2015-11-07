@@ -13,7 +13,7 @@ class OpenHouse {
     private $houseOccupied;
 
     const STARTUP_COMMAND_DELAY_S = 5;
-    const PAIRING_ATTEMPTS = 5;
+    const PAIRING_ATTEMPTS = 3;
     const DEVICE_TIMEOUT_S = 60;
     const OCCUPIED_POLL_DELAY_S = 2;
     const HCI_PAGETO_MS = 1500;
@@ -46,7 +46,8 @@ class OpenHouse {
 
                 // attempt to pair with registered addresses
                 $result = shell_exec("hcitool cc $registeredAddress; hcitool auth $registeredAddress;");
-                $successful = ($result === '');
+                $successful = ($result === "\n");
+                print_r($successful);
                 if ($successful) {
                     echo "DEVICE PAIRED: $registeredAddress\n";
                     break;
