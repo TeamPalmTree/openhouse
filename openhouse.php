@@ -47,7 +47,7 @@ class OpenHouse {
                 // attempt to pair with registered addresses
                 $result = shell_exec("hcitool cc $registeredAddress; hcitool auth $registeredAddress;");
                 $successful = ($result === "\n");
-                print_r($successful);
+                echo bin2hex($result);
                 if ($successful) {
                     echo "DEVICE PAIRED: $registeredAddress\n";
                     break;
