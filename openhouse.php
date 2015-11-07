@@ -46,8 +46,7 @@ class OpenHouse {
 
                 // attempt to pair with registered addresses
                 $result = shell_exec("hcitool cc $registeredAddress; hcitool auth $registeredAddress;");
-                $successful = ($result === "\n");
-                echo bin2hex($result);
+                $successful = (strpos($result, 'error') === false);
                 if ($successful) {
                     echo "DEVICE PAIRED: $registeredAddress\n";
                     break;
@@ -57,7 +56,6 @@ class OpenHouse {
 
                 // small wait
                 sleep(self::STARTUP_COMMAND_DELAY_S);
-                $attempts++;
 
             }
         }
