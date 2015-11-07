@@ -42,27 +42,6 @@ class OpenHouse {
         sleep(self::STARTUP_COMMAND_DELAY_S);
     }
 
-    private function hciPair()
-    {
-        foreach ($this->registeredAddresses as $registeredAddress) {
-            for ($attempts = 1; $attempts <= self::PAIRING_ATTEMPTS; $attempts++) {
-
-                // attempt to pair with registered addresses
-                $result = shell_exec("hcitool cc $registeredAddress; hcitool auth $registeredAddress;");
-                if (strpos($result, 'error') === false) {
-                    echo "DEVICE PAIRED: $registeredAddress\n";
-                    break;
-                } else {
-                    echo "DEVICE NOT PAIRED $registeredAddress (ATTEMPT: $attempts/" . self::PAIRING_ATTEMPTS . ")\n";
-                }
-
-                // small wait
-                sleep(self::STARTUP_COMMAND_DELAY_S);
-
-            }
-        }
-    }
-
     private function pingDevice($address)
     {
         $result = shell_exec("l2ping $address -c 1 -t " . self::L2PING_TIMEOUT);
@@ -124,8 +103,6 @@ class OpenHouse {
 
         // hci up and config
         $this->hciConfig();
-        // pair devices
-        $this->hciPair();
         // cache program ids
         $this->isyPrograms = $this->getIsyPrograms();
 
