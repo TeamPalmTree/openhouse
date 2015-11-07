@@ -15,7 +15,7 @@ class OpenHouse {
 
     const STARTUP_COMMAND_DELAY_S = 5;
     const PAIRING_ATTEMPTS = 3;
-    const DEVICE_TIMEOUT_S = 60;
+    const DEVICE_TIMEOUT_S = 30;
     const OCCUPIED_POLL_DELAY_S = 2;
     const HCI_PAGETO_MS = 1500;
     const L2PING_TIMEOUT = 1;
@@ -140,7 +140,7 @@ class OpenHouse {
                         $this->runIsyEnteredProgram();
                     }
 
-                    if (count($this->foundAddresses) > 0) {
+                    if (count($this->foundAddresses) === 0) {
                         echo "HOUSE OCCUPIED\n";
                         $this->houseOccupied = true;
                         $this->runIsyOccupiedProgram();
