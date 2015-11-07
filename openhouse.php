@@ -15,8 +15,7 @@ class OpenHouse {
 
     const DEVICE_TIMEOUT_S = 45;
     const OCCUPIED_POLL_DELAY_S = 1;
-    const HCI_PAGETO_MS = 1000;
-    const L2PING_TIMEOUT = 0;
+    const L2PING_TIMEOUT = 1;
 
     function __construct($config)
     {
@@ -40,7 +39,7 @@ class OpenHouse {
 
     private function pingDevice($address)
     {
-        $result = shell_exec("l2ping $address -c 1 -t " . self::L2PING_TIMEOUT);
+        $result = shell_exec("l2ping $address -s 1-c 1 -t " . self::L2PING_TIMEOUT);
         return (strpos($result, $address) !== false);
     }
 
@@ -153,7 +152,12 @@ class OpenHouse {
 
 }
 
-$configString = file_get_contents("config.json");
+// check for config file
+if (count($argv) < 2) {
+    exit(1);
+}
+
+$configString = file_get_contents($argv[1]);
 $config = json_decode($configString);
 $openHouse = new OpenHouse($config);
 $openHouse->run();
