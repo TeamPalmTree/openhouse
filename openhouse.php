@@ -34,6 +34,7 @@ class OpenHouse {
         shell_exec("hciconfig hci0 up");
         // set ping HW timeout
         shell_exec("hciconfig hci0 pageto " . self::HCI_PAGETO_MS);
+        echo "HCI CONFIGURED\n";
         // small wait
         sleep(self::STARTUP_COMMAND_DELAY_S);
     }
@@ -41,14 +42,23 @@ class OpenHouse {
     private function hciPair()
     {
         foreach ($this->registeredAddresses as $registeredAddress) {
-            $attempts = 0;
-            do {
-                // attemp to pair with registered addresses
+            for ($attempts = 1; $attempts <= self::PAIRING_ATTEMPTS; $attempts++) {
+
+                // attempt to pair with registered addresses
                 $result = shell_exec("hcitool cc $registeredAddress; hcitool auth $registeredAddress;");
+                $successful = ($result === '');
+                if ($successful) {
+                    echo "DEVICE PAIRED: $registeredAddress\n";
+                    break;
+                } else {
+                    echo "DEVICE NOT PAIRED $registeredAddress (ATTEMPT: $attempts/" . self::PAIRING_ATTEMPTS . ")\n";
+                }
+
                 // small wait
                 sleep(self::STARTUP_COMMAND_DELAY_S);
                 $attempts++;
-            } while (($attempts < self::PAIRING_ATTEMPTS) && (strpos($result, 'error') !== false));
+
+            }
         }
     }
 
@@ -83,6 +93,7 @@ class OpenHouse {
         $ids = array_map(function($id) {
             return (string) $id[0];
         }, $ids);
+        echo "ISY PROGRAMS DISCOVERED: " . count($ids) . "\n";
         return array_combine($names, $ids);
     }
 
