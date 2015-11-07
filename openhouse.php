@@ -40,7 +40,7 @@ class OpenHouse {
 
     private function pingDevice($address)
     {
-        $result = shell_exec("l2ping $address -s 1-c 1 -t " . self::L2PING_TIMEOUT);
+        $result = shell_exec("l2ping $address -s 1 -c 1 -t " . self::L2PING_TIMEOUT);
         return (strpos($result, $address) !== false);
     }
 
