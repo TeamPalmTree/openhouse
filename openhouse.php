@@ -13,12 +13,10 @@ class OpenHouse {
     private $isyPrograms;
     private $houseOccupied;
 
-    const STARTUP_COMMAND_DELAY_S = 5;
-    const PAIRING_ATTEMPTS = 3;
-    const DEVICE_TIMEOUT_S = 30;
-    const OCCUPIED_POLL_DELAY_S = 2;
-    const HCI_PAGETO_MS = 1500;
-    const L2PING_TIMEOUT = 1;
+    const DEVICE_TIMEOUT_S = 45;
+    const OCCUPIED_POLL_DELAY_S = 1;
+    const HCI_PAGETO_MS = 1000;
+    const L2PING_TIMEOUT = 0;
 
     function __construct($config)
     {
@@ -38,8 +36,6 @@ class OpenHouse {
         // set ping HW timeout
         shell_exec("hciconfig hci0 pageto " . self::HCI_PAGETO_MS);
         echo "HCI CONFIGURED\n";
-        // small wait
-        sleep(self::STARTUP_COMMAND_DELAY_S);
     }
 
     private function pingDevice($address)
@@ -127,6 +123,8 @@ class OpenHouse {
                     $this->foundAddresses[$registeredAddress] = time();
 
                 } else {
+
+                    echo "DEVICE RELAXING: $registeredAddress\n";
 
                     // see if an existing entry has expired
                     if (array_key_exists($registeredAddress, $this->foundAddresses)) {
