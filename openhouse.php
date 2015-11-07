@@ -15,6 +15,7 @@ class OpenHouse {
 
     const DEVICE_TIMEOUT_S = 45;
     const OCCUPIED_POLL_DELAY_S = 1;
+    const HCI_PAGETO_MS = 1000;
     const L2PING_TIMEOUT = 1;
 
     function __construct($config)
