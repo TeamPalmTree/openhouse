@@ -9,6 +9,7 @@ class OpenHouse {
     private $isyPassword;
     private $isyOccupiedProgram;
     private $isyEmptyProgram;
+    private $isyEnteredProgram;
     private $isyPrograms;
     private $houseOccupied;
 
@@ -17,6 +18,7 @@ class OpenHouse {
     const DEVICE_TIMEOUT_S = 60;
     const OCCUPIED_POLL_DELAY_S = 2;
     const HCI_PAGETO_MS = 1500;
+    const L2PING_TIMEOUT = 1;
 
     function __construct($config)
     {
@@ -26,6 +28,7 @@ class OpenHouse {
         $this->isyPassword = $config->isyPassword;
         $this->isyOccupiedProgram = $config->isyOccupiedProgram;
         $this->isyEmptyProgram = $config->isyEmptyProgram;
+        $this->isyEnteredProgram = $config->isyEnteredProgram;
     }
 
     private function hciConfig()
@@ -46,8 +49,7 @@ class OpenHouse {
 
                 // attempt to pair with registered addresses
                 $result = shell_exec("hcitool cc $registeredAddress; hcitool auth $registeredAddress;");
-                $successful = (strpos($result, 'error') === false);
-                if ($successful) {
+                if (strpos($result, 'error') === false) {
                     echo "DEVICE PAIRED: $registeredAddress\n";
                     break;
                 } else {
@@ -63,7 +65,7 @@ class OpenHouse {
 
     private function pingDevice($address)
     {
-        $result = shell_exec("l2ping $address -c 1 -t 0");
+        $result = shell_exec("l2ping $address -c 1 -t " . self::L2PING_TIMEOUT);
         return (strpos($result, $address) !== false);
     }
 
@@ -71,6 +73,12 @@ class OpenHouse {
     {
         $isyOccupiedProgramId = $this->isyPrograms[$this->isyOccupiedProgram];
         $this->runIsyProgram($isyOccupiedProgramId);
+    }
+
+    private function runIsyEnteredProgram()
+    {
+        $isyEnteredProgramId = $this->isyPrograms[$this->isyEnteredProgram];
+        $this->runIsyProgram($isyEnteredProgramId);
     }
 
     private function runIsyEmptyProgram()
@@ -128,10 +136,11 @@ class OpenHouse {
                 if ($this->pingDevice($registeredAddress)) {
 
                     if (!array_key_exists($registeredAddress, $this->foundAddresses)) {
-                        echo "DEVICE DISCOVERED: $registeredAddress\n";
+                        echo "DEVICE ENTERED: $registeredAddress\n";
+                        $this->runIsyEnteredProgram();
                     }
 
-                    if (count($this->foundAddresses) === 0) {
+                    if (count($this->foundAddresses) > 0) {
                         echo "HOUSE OCCUPIED\n";
                         $this->houseOccupied = true;
                         $this->runIsyOccupiedProgram();

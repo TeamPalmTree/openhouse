@@ -6,5 +6,6 @@
   "isyUsername": "",
   "isyPassword": "",
   "isyOccupiedProgram": "",
-  "isyEmptyProgram": ""
+  "isyEmptyProgram": "",
+  "isyEnteredProgram": ""
 }
