@@ -2,6 +2,7 @@
 
 class OpenHouse {
 
+
     private $foundAddresses = [];
     private $registeredAddresses;
     private $isyHostname;
