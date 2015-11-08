@@ -35,7 +35,7 @@ class OpenHouse {
         shell_exec("hciconfig hci0 up");
         // set ping HW timeout
         shell_exec("hciconfig hci0 pageto " . self::HCI_PAGETO_MS);
-        echo "HCI CONFIGURED\n";
+        $this->log("HCI CONFIGURED");
     }
 
     private function nameDevices()
@@ -92,7 +92,6 @@ class OpenHouse {
         $ids = array_map(function($id) {
             return (string) $id[0];
         }, $ids);
-        echo "ISY PROGRAMS DISCOVERED: " . count($ids) . "\n";
         return array_combine($names, $ids);
     }
 
@@ -111,6 +110,10 @@ class OpenHouse {
         return simplexml_load_string($body);
     }
 
+    private function log($message) {
+        echo date('Y-m-d H:i:s') . ' ' . $message . "\n";
+    }
+
     public function run()
     {
 
@@ -118,6 +121,7 @@ class OpenHouse {
         $this->hciConfig();
         // cache program ids
         $this->isyPrograms = $this->getIsyPrograms();
+        $this->log("ISY PROGRAMS DISCOVERED: " . count($this->isyPrograms));
 
         while (true) {
 
@@ -129,12 +133,12 @@ class OpenHouse {
                 if (array_search($registeredDevice->name, $foundDeviceNames) !== false) {
 
                     if (!array_key_exists($registeredDevice->name, $this->foundDevices)) {
-                        echo "DEVICE ENTERED: $registeredDevice->name ($registeredDevice->address)\n";
+                        $this->log("DEVICE ENTERED: $registeredDevice->name ($registeredDevice->address)");
                         $this->runIsyEnteredProgram();
                     }
 
                     if (count($this->foundDevices) === 0) {
-                        echo "HOUSE OCCUPIED\n";
+                        $this->log("HOUSE OCCUPIED");
                         $this->houseOccupied = true;
                         $this->runIsyOccupiedProgram();
                     }
@@ -144,15 +148,15 @@ class OpenHouse {
 
                 } else {
 
-                    echo "DEVICE RELAXING: $registeredDevice->name ($registeredDevice->address)\n";
+                    $this->log("DEVICE RELAXING: $registeredDevice->name ($registeredDevice->address)");
 
                     // see if an existing entry has expired
                     if (array_key_exists($registeredDevice->name, $this->foundDevices)) {
                         if ((time() - $this->foundDevices[$registeredDevice->name]) > self::DEVICE_TIMEOUT_S) {
-                            echo "DEVICE LOST: $registeredDevice->name ($registeredDevice->address)\n";
+                            $this->log("DEVICE LOST: $registeredDevice->name ($registeredDevice->address)");
                             unset($this->foundDevices[$registeredDevice->name]);
                             if (count($this->foundDevices) === 0) {
-                                echo "HOUSE EMPTY\n";
+                                $this->log("HOUSE EMPTY");
                                 $this->houseOccupied = false;
                                 $this->runIsyEmptyProgram();
                             }
