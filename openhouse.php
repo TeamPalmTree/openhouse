@@ -3,8 +3,8 @@
 class OpenHouse {
 
 
-    private $foundAddresses = [];
-    private $registeredAddresses;
+    private $foundDevices = [];
+    private $registeredDevices;
     private $isyHostname;
     private $isyUsername;
     private $isyPassword;
@@ -14,14 +14,13 @@ class OpenHouse {
     private $isyPrograms;
     private $houseOccupied;
 
-    const DEVICE_TIMEOUT_S = 45;
-    const OCCUPIED_POLL_DELAY_S = 1;
-    const HCI_PAGETO_MS = 1500;
-    const L2PING_TIMEOUT = 1;
+    const DEVICE_TIMEOUT_S = 120;
+    const HCI_PAGETO_MS = 750;
+    const NAME_DEVICE_REPEAT = 2;
 
     function __construct($config)
     {
-        $this->registeredAddresses = $config->registeredAddresses;
+        $this->registeredDevices = $config->registeredDevices;
         $this->isyHostname = $config->isyHostname;
         $this->isyUsername = $config->isyUsername;
         $this->isyPassword = $config->isyPassword;
@@ -39,10 +38,27 @@ class OpenHouse {
         echo "HCI CONFIGURED\n";
     }
 
-    private function pingDevice($address)
+    private function nameDevices()
     {
-        $result = shell_exec("l2ping $address -s 1 -c 1 -t " . self::L2PING_TIMEOUT);
-        return (strpos($result, $address) !== false);
+
+        $command = '';
+        foreach ($this->registeredDevices as $registeredDevice) {
+            for ($i = 0; $i < self::NAME_DEVICE_REPEAT; $i++) {
+                $command .= "hcitool name $registeredDevice->address;";
+            }
+        }
+
+        $result = shell_exec($command);
+
+        $deviceNames = [];
+        foreach ($this->registeredDevices as $registeredDevice) {
+            if (strpos($result, $registeredDevice->name) !== false) {
+                $deviceNames[] = $registeredDevice->name;
+            }
+        }
+
+        return $deviceNames;
+
     }
 
     private function runIsyOccupiedProgram()
@@ -104,35 +120,38 @@ class OpenHouse {
         $this->isyPrograms = $this->getIsyPrograms();
 
         while (true) {
+
+            // find all registered devices nearby
+            $foundDeviceNames = $this->nameDevices();
             
-            foreach ($this->registeredAddresses as $registeredAddress) {
+            foreach ($this->registeredDevices as $registeredDevice) {
 
-                if ($this->pingDevice($registeredAddress)) {
+                if (array_search($registeredDevice->name, $foundDeviceNames) !== false) {
 
-                    if (!array_key_exists($registeredAddress, $this->foundAddresses)) {
-                        echo "DEVICE ENTERED: $registeredAddress\n";
+                    if (!array_key_exists($registeredDevice->name, $this->foundDevices)) {
+                        echo "DEVICE ENTERED: $registeredDevice->name ($registeredDevice->address)\n";
                         $this->runIsyEnteredProgram();
                     }
 
-                    if (count($this->foundAddresses) === 0) {
+                    if (count($this->foundDevices) === 0) {
                         echo "HOUSE OCCUPIED\n";
                         $this->houseOccupied = true;
                         $this->runIsyOccupiedProgram();
                     }
 
                     // update the time of discovery
-                    $this->foundAddresses[$registeredAddress] = time();
+                    $this->foundDevices[$registeredDevice->name] = time();
 
                 } else {
 
-                    echo "DEVICE RELAXING: $registeredAddress\n";
+                    echo "DEVICE RELAXING: $registeredDevice->name ($registeredDevice->address)\n";
 
                     // see if an existing entry has expired
-                    if (array_key_exists($registeredAddress, $this->foundAddresses)) {
-                        if ((time() - $this->foundAddresses[$registeredAddress]) > self::DEVICE_TIMEOUT_S) {
-                            echo "DEVICE LOST: $registeredAddress\n";
-                            unset($this->foundAddresses[$registeredAddress]);
-                            if (count($this->foundAddresses) === 0) {
+                    if (array_key_exists($registeredDevice->name, $this->foundDevices)) {
+                        if ((time() - $this->foundDevices[$registeredDevice->name]) > self::DEVICE_TIMEOUT_S) {
+                            echo "DEVICE LOST: $registeredDevice->name ($registeredDevice->address)\n";
+                            unset($this->foundDevices[$registeredDevice->name]);
+                            if (count($this->foundDevices) === 0) {
                                 echo "HOUSE EMPTY\n";
                                 $this->houseOccupied = false;
                                 $this->runIsyEmptyProgram();
@@ -140,11 +159,6 @@ class OpenHouse {
                         }
                     }
 
-                }
-
-                // if we are occupied, we can take a breather
-                if ($this->houseOccupied) {
-                    sleep(self::OCCUPIED_POLL_DELAY_S);
                 }
 
             }

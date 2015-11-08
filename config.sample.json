@@ -1,6 +1,6 @@
 {
-  "registeredAddresses": [
-    "AA:AA:AA:AA:AA:AA"
+  "registeredDevices": [
+    { "name": "deviceName", "address": "AA:AA:AA:AA:AA:AA" }
   ],
   "isyHostname": "",
   "isyUsername": "",
