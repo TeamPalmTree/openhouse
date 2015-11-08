@@ -132,6 +132,8 @@ class OpenHouse {
 
                 if (array_search($registeredDevice->name, $foundDeviceNames) !== false) {
 
+                    $this->log("DEVICE ALIVE: $registeredDevice->name ($registeredDevice->address)");
+
                     if (!array_key_exists($registeredDevice->name, $this->foundDevices)) {
                         $this->log("DEVICE ENTERED: $registeredDevice->name ($registeredDevice->address)");
                         $this->runIsyEnteredProgram();
