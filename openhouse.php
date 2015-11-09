@@ -14,9 +14,9 @@ class OpenHouse {
     private $isyPrograms;
     private $houseOccupied;
 
-    const DEVICE_TIMEOUT_S = 120;
-    const HCI_PAGETO_MS = 750;
-    const NAME_DEVICE_REPEAT = 2;
+    const DEVICE_TIMEOUT_S = 300;
+    const HCI_PAGETO_MS = 1000;
+    const NAME_DEVICE_REPEAT = 1;
 
     function __construct($config)
     {
