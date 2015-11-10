@@ -2,7 +2,6 @@
 
 class OpenHouse {
 
-
     private $foundDevices = [];
     private $registeredDevices;
     private $isyHostname;
@@ -86,13 +85,19 @@ class OpenHouse {
 
     private function getIsyPrograms()
     {
+
         $response = $this->callIsy("programs?subfolders=true");
+        if (!$response) {
+            return null;
+        }
+
         $names = $response->xpath("/programs/program/name/text()");
         $ids = $response->xpath("/programs/program/@id");
         $ids = array_map(function($id) {
             return (string) $id[0];
         }, $ids);
         return array_combine($names, $ids);
+
     }
 
     private function callIsy($rest)
@@ -107,7 +112,12 @@ class OpenHouse {
         $headerSize = curl_getinfo($request, CURLINFO_HEADER_SIZE);
         $body = substr($response, $headerSize);
         curl_close($request);
-        return simplexml_load_string($body);
+        // check for error
+        if (curl_errno($request)) {
+            return null;
+        } else {
+            return simplexml_load_string($body);
+        }
     }
 
     private function log($message) {
@@ -121,6 +131,11 @@ class OpenHouse {
         $this->hciConfig();
         // cache program ids
         $this->isyPrograms = $this->getIsyPrograms();
+        if (!$this->isyPrograms) {
+            $this->log("ISY PROGRAMS UNKNOWN");
+            return;
+        }
+
         $this->log("ISY PROGRAMS DISCOVERED: " . count($this->isyPrograms));
 
         while (true) {
