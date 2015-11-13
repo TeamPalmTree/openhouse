@@ -54,22 +54,34 @@ class OpenHouse extends Module {
 
     public function entered()
     {
-        foreach ($this->modules as $module) {
-            $module->entered();
+        foreach ($this->modules as $moduleName => $module) {
+            try {
+                $module->entered();
+            } catch (Exception $ex) {
+                $this->log("MODULE $moduleName ENTERED FAILED (" . $ex->getMessage() . ")");
+            }
         }
     }
 
     public function occupied()
     {
-        foreach ($this->modules as $module) {
-            $module->occupied();
+        foreach ($this->modules as $moduleName => $module) {
+            try {
+                $module->occupied();
+            } catch (Exception $ex) {
+                $this->log("MODULE $moduleName OCCUPIED FAILED (" . $ex->getMessage() . ")");
+            }
         }
     }
 
     public function vacant()
     {
-        foreach ($this->modules as $module) {
-            $module->vacant();
+        foreach ($this->modules as $moduleName => $module) {
+            try {
+                $module->vacant();
+            } catch (Exception $ex) {
+                $this->log("MODULE $moduleName VACANT FAILED (" . $ex->getMessage() . ")");
+            }
         }
     }
 

@@ -1,11 +1,18 @@
 {
   "registeredDevices": [
-    { "name": "deviceName", "address": "AA:AA:AA:AA:AA:AA" }
+    {
+      "name": "",
+      "address": "AA:AA:AA:AA:AA:AA"
+    }
   ],
-  "isyHostname": "",
-  "isyUsername": "",
-  "isyPassword": "",
-  "isyOccupiedProgram": "",
-  "isyEmptyProgram": "",
-  "isyEnteredProgram": ""
+  "modules": {
+    "ISY": {
+      "hostname": "192.168.1.4",
+      "username": "test",
+      "password": "test",
+      "enteredProgram": "House Entered",
+      "occupiedProgram": "House Occupied",
+      "vacantProgram": "House Vacant"
+    }
+  }
 }
