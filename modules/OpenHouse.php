@@ -128,9 +128,9 @@ class OpenHouse extends Module {
                             $this->log("DEVICE LOST: $registeredDevice->name ($registeredDevice->address)");
                             unset($this->foundDevices[$registeredDevice->name]);
                             if (count($this->foundDevices) === 0) {
-                                $this->log("HOUSE EMPTY");
+                                $this->log("HOUSE VACANT");
                                 $this->isOccupied = false;
-                                $this->empty();
+                                $this->vacant();
                             }
                         }
                     }

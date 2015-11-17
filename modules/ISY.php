@@ -17,16 +17,16 @@ class ISY extends Module {
         $this->log("ISY PROGRAMS DISCOVERED: " . count($this->programs));
     }
 
-    public function occupied()
-    {
-        $occupiedProgramId = $this->programs[$this->configuration->occupiedProgram];
-        $this->runProgram($occupiedProgramId);
-    }
-
     public function entered()
     {
         $enteredProgramId = $this->programs[$this->configuration->enteredProgram];
         $this->runProgram($enteredProgramId);
+    }
+
+    public function occupied()
+    {
+        $occupiedProgramId = $this->programs[$this->configuration->occupiedProgram];
+        $this->runProgram($occupiedProgramId);
     }
 
     public function vacant()
