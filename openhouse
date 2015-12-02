@@ -13,8 +13,8 @@ DAEMON="/usr/bin/php-cli"
 DAEMON_DIR="/etc/openhouse"
 DAEMON_FILE="${DAEMON_DIR}/main.php"
 
-START_OPTS="--start --background --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} ${DAEMON_FILE}"
-STOP_OPTS="--stop --pidfile ${PIDFILE}"
+START_OPTS="-S -b -m -p ${PIDFILE} -x ${DAEMON} ${DAEMON_FILE}"
+STOP_OPTS="-K -p ${PIDFILE}"
 
 test -x $DAEMON || exit 0
 
