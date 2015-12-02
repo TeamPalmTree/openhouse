@@ -17,9 +17,13 @@ DAEMON_OPTS="${CONFFILE}"
 START_OPTS="-S -b -m -p ${PIDFILE} -x ${DAEMON_CLI} ${DAEMON_FILE} ${DAEMON_OPTS}"
 STOP_OPTS="-K -p ${PIDFILE}"
 
-test -x $DAEMON_CLI || exit 0
+boot() {
+    return 0;
+}
 
-set -e
+reload() {
+    stop
+}
 
 start() {
     echo -n "Starting ${DESC}"
@@ -41,5 +45,3 @@ restart() {
     sleep 1
     start
 }
-
-exit 0
