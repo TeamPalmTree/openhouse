@@ -1,8 +1,7 @@
-#! /bin/sh
+#! /bin/sh /etc/rc.common
 
-# Installation
-# - Create symlink /etc/init.d/openhouse to this file
-# - chmod +x the symlink
+START=100
+STOP=10
 
 NAME=openhouse
 DESC="OpenHouse Daemon"
@@ -42,26 +41,5 @@ restart() {
     sleep 1
     start
 }
-
-usage() {
-    N=/etc/init.d/$NAME
-    echo "Usage: $N {start|stop|restart|force-reload}" >&2
-    exit 1
-}
-
-case "$1" in
-    start)
-        start
-        ;;
-    stop)
-        stop
-        ;;
-    restart|force-reload)
-        restart
-        ;;
-    *)
-        usage
-        ;;
-esac
 
 exit 0
