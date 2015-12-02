@@ -22,30 +22,45 @@ test -x $DAEMON_CLI || exit 0
 
 set -e
 
+start() {
+    echo -n "Starting ${DESC}"
+    cd $DAEMON_DIR
+    start-stop-daemon $START_OPTS >> $LOGFILE
+    return 0
+}
+
+stop() {
+    echo -n "Stopping ${DESC}"
+    start-stop-daemon $STOP_OPTS
+    rm -f $PIDFILE
+    return 0
+}
+
+restart() {
+    echo -n "Restarting ${DESC}"
+    stop
+    sleep 1
+    start
+}
+
+usage() {
+    N=/etc/init.d/$NAME
+    echo "Usage: $N {start|stop|restart|force-reload}" >&2
+    exit 1
+}
+
 case "$1" in
     start)
-        echo -n "Starting ${DESC}: "
-        cd $DAEMON_DIR
-        start-stop-daemon $START_OPTS >> $LOGFILE
-        echo "$NAME."
+        start
         ;;
     stop)
-        echo -n "Stopping $DESC: "
-        start-stop-daemon $STOP_OPTS
-        echo "$NAME."
-        rm -f $PIDFILE
+        stop
         ;;
     restart|force-reload)
-        echo -n "Restarting $DESC: "
-        start-stop-daemon $STOP_OPTS
-        sleep 1
-        start-stop-daemon $START_OPTS >> $LOGFILE
-        echo "$NAME."
+        restart
         ;;
     *)
-        N=/etc/init.d/$NAME
-        echo "Usage: $N {start|stop|restart|force-reload}" >&2
-        exit 1
+        usage
         ;;
 esac
 
