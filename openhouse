@@ -17,10 +17,6 @@ DAEMON_OPTS="${CONFFILE}"
 START_OPTS="-S -b -m -p ${PIDFILE} -x ${DAEMON_CLI} ${DAEMON_FILE} ${DAEMON_OPTS}"
 STOP_OPTS="-K -p ${PIDFILE}"
 
-boot() {
-    return 0;
-}
-
 reload() {
     stop
 }
