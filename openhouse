@@ -8,15 +8,17 @@ NAME=openhouse
 DESC="OpenHouse Daemon"
 PIDFILE="/var/run/${NAME}.pid"
 LOGFILE="/var/log/${NAME}.log"
+CONFFILE="/etc/openhouse.json"
 
-DAEMON="/usr/bin/php-cli"
+DAEMON_CLI="/usr/bin/php-cli"
 DAEMON_DIR="/etc/openhouse"
-DAEMON_FILE="${DAEMON_DIR}/main.php"
+DAEMON_FILE="main.php"
+DAEMON_OPTS="${CONFFILE}"
 
-START_OPTS="-S -b -m -p ${PIDFILE} -x ${DAEMON} ${DAEMON_FILE}"
+START_OPTS="-S -b -m -p ${PIDFILE} -x ${DAEMON_CLI} ${DAEMON_FILE} ${DAEMON_OPTS}"
 STOP_OPTS="-K -p ${PIDFILE}"
 
-test -x $DAEMON || exit 0
+test -x $DAEMON_CLI || exit 0
 
 set -e
 
