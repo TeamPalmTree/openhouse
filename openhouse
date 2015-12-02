@@ -37,9 +37,10 @@ case "$1" in
         ;;
     restart|force-reload)
         echo -n "Restarting $DESC: "
-        stop
+        start-stop-daemon $STOP_OPTS
         sleep 1
-        start
+        start-stop-daemon $START_OPTS >> $LOGFILE
+        echo "$NAME."
         ;;
     *)
         N=/etc/init.d/$NAME
