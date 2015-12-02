@@ -5,8 +5,8 @@ STOP=10
 
 NAME=openhouse
 DESC="OpenHouse Daemon"
-PIDFILE="/var/run/${NAME}.pid"
-LOGFILE="/var/log/${NAME}.log"
+PIDFILE="/var/run/${NAME}"
+LOGFILE="/var/log/${NAME}"
 CONFFILE="/etc/openhouse.json"
 
 DAEMON_CLI="/usr/bin/php-cli"
