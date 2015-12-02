@@ -6,7 +6,6 @@ STOP=10
 NAME=openhouse
 DESC="OpenHouse Daemon"
 PIDFILE="/var/run/${NAME}"
-LOGFILE="/var/log/${NAME}"
 CONFFILE="/etc/openhouse.json"
 
 DAEMON_CLI="/usr/bin/php-cli"
@@ -24,7 +23,7 @@ reload() {
 start() {
     echo -n "Starting ${DESC}"
     cd $DAEMON_DIR
-    start-stop-daemon $START_OPTS >> $LOGFILE
+    start-stop-daemon $START_OPTS
     return 0
 }
 

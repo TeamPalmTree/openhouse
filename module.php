@@ -8,7 +8,8 @@ abstract class Module {
     }
 
     protected function log($message) {
-        echo date('Y-m-d H:i:s') . ' ' . $message . "\n";
+        $message = date('Y-m-d H:i:s') . ' ' . $message;
+        error_log($message, 3, '/var/log/openhouse');
     }
 
     abstract function initialize();
