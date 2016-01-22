@@ -102,7 +102,7 @@ class OpenHouse extends Module {
 
                 if (array_search($registeredDevice->name, $foundDeviceNames) !== false) {
 
-                    $this->log("DEVICE ALIVE: $registeredDevice->name ($registeredDevice->address)");
+                    //$this->log("DEVICE ALIVE: $registeredDevice->name ($registeredDevice->address)");
 
                     if (!array_key_exists($registeredDevice->name, $this->foundDevices)) {
                         $this->log("DEVICE ENTERED: $registeredDevice->name ($registeredDevice->address)");
@@ -120,7 +120,7 @@ class OpenHouse extends Module {
 
                 } else {
 
-                    $this->log("DEVICE RELAXING: $registeredDevice->name ($registeredDevice->address)");
+                    //$this->log("DEVICE RELAXING: $registeredDevice->name ($registeredDevice->address)");
 
                     // see if an existing entry has expired
                     if (array_key_exists($registeredDevice->name, $this->foundDevices)) {
